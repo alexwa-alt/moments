@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Seesaw Showdown: Moments and Centre of Gravity</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Full-screen layer for balloons and confetti. It ignores touches. -->
+  <canvas id="fx" aria-hidden="true"></canvas>
+  <div id="banner" role="status" aria-live="polite"></div>
+
+  <main>
+
+    <!-- ============ 1. PHOTOS ============ -->
+    <section id="screen-setup" class="screen active">
+      <div class="hero">
+        <h1>Seesaw Showdown</h1>
+        <p class="tagline">Y10 Physics: moments and centre of gravity</p>
+        <p>Play in pairs. Take a photo of each person. Your faces become the characters, and the balloons.</p>
+        <p class="privacy">🔒 Photos stay on this device, inside this browser tab. Nothing is uploaded or saved, and they disappear when you close or refresh the page.</p>
+      </div>
+
+      <div class="players">
+        <div class="player-card" data-player="0" data-state="idle">
+          <h2>Player 1</h2>
+          <input class="name-input" type="text" maxlength="14" placeholder="Name or silly nickname" aria-label="Player 1 name">
+          <div class="cam-box">
+            <div class="placeholder">📷</div>
+            <video playsinline muted autoplay></video>
+            <canvas class="snap" width="256" height="256"></canvas>
+            <div class="countdown" aria-live="assertive"></div>
+          </div>
+          <p class="cam-msg" role="status"></p>
+          <div class="btn-row">
+            <button class="btn primary btn-main">📷 Start camera</button>
+            <label class="btn secondary">🖼️ Take / choose photo<input type="file" accept="image/*" capture="user" hidden></label>
+          </div>
+        </div>
+
+        <div class="player-card" data-player="1" data-state="idle">
+          <h2>Player 2</h2>
+          <input class="name-input" type="text" maxlength="14" placeholder="Name or silly nickname" aria-label="Player 2 name">
+          <div class="cam-box">
+            <div class="placeholder">📷</div>
+            <video playsinline muted autoplay></video>
+            <canvas class="snap" width="256" height="256"></canvas>
+            <div class="countdown" aria-live="assertive"></div>
+          </div>
+          <p class="cam-msg" role="status"></p>
+          <div class="btn-row">
+            <button class="btn primary btn-main">📷 Start camera</button>
+            <label class="btn secondary">🖼️ Take / choose photo<input type="file" accept="image/*" capture="user" hidden></label>
+          </div>
+        </div>
+      </div>
+
+      <div class="actions">
+        <button id="btn-continue" class="btn primary big" disabled>Choose a game</button>
+        <button id="btn-cartoon" class="btn link">Skip photos and use cartoon faces</button>
+      </div>
+    </section>
+
+    <!-- ============ 2. CHOOSE A GAME ============ -->
+    <section id="screen-menu" class="screen">
+      <div class="hero">
+        <div class="duo">
+          <figure><img id="menu-face-0" alt="Player 1"><figcaption id="menu-name-0"></figcaption></figure>
+          <span class="vs">+</span>
+          <figure><img id="menu-face-1" alt="Player 2"><figcaption id="menu-name-1"></figcaption></figure>
+        </div>
+        <h1>Choose your showdown</h1>
+        <p>Take turns to answer. The other person is the checker: talk it through before you press Check.</p>
+      </div>
+      <div class="modes">
+        <button class="mode" data-mode="moments"><span class="emoji">⚖️</span><b>Moments</b><small>Spanners and seesaws, 8 rounds</small></button>
+        <button class="mode" data-mode="cog"><span class="emoji">🎯</span><b>Centre of gravity</b><small>Pin it down and topple-test a bus, 8 rounds</small></button>
+        <button class="mode" data-mode="both"><span class="emoji">🎉</span><b>The full showdown</b><small>Both topics, 10 rounds</small></button>
+      </div>
+      <div class="actions"><button id="btn-back-faces" class="btn link">Change photos</button></div>
+    </section>
+
+    <!-- ============ 3. THE GAME ============ -->
+    <section id="screen-game" class="screen">
+      <div class="hud">
+        <button id="btn-menu" class="icon-btn" aria-label="Back to menu">☰</button>
+        <span id="hud-round"></span>
+        <span class="spacer"></span>
+        <span id="hud-streak"></span>
+        <span id="hud-score" class="score"></span>
+        <button id="btn-mute" class="icon-btn" aria-label="Sound on">🔊</button>
+      </div>
+
+      <div id="stage-wrap" class="stage-wrap">
+        <canvas id="stage"></canvas>
+      </div>
+
+      <div class="panel">
+        <div class="turn">
+          <img id="turn-img" alt="">
+          <div><b id="turn-name"></b><span id="turn-sub"></span></div>
+        </div>
+        <h2 id="title"></h2>
+        <p id="prompt" class="prompt"></p>
+        <p class="talk"><b>Talk it over:</b> <span id="talk-text"></span></p>
+
+        <div id="controls"></div>
+        <div id="feedback" class="feedback" aria-live="polite"></div>
+
+        <div class="btn-row end-row">
+          <button id="btn-hint" class="btn secondary">💡 Hint (−25 points)</button>
+          <button id="btn-next" class="btn primary big" hidden>Next round ▶</button>
+        </div>
+
+        <details class="formulas">
+          <summary>📖 Formula help</summary>
+          <ul>
+            <li><b>moment (N m) = force (N) × perpendicular distance from the pivot (m)</b></li>
+            <li>Principle of moments: when balanced, <b>total clockwise moment = total anticlockwise moment</b></li>
+            <li>Weight acts through the <b>centre of gravity (CoG)</b></li>
+            <li>An object topples if the vertical line down from its CoG falls <b>outside its base</b></li>
+            <li>100 cm = 1 m. Convert before you multiply!</li>
+          </ul>
+        </details>
+      </div>
+    </section>
+
+    <!-- ============ 4. RESULTS ============ -->
+    <section id="screen-end" class="screen">
+      <div class="hero results">
+        <div class="duo">
+          <figure><img id="end-face-0" alt="Player 1"><figcaption id="end-name-0"></figcaption></figure>
+          <span class="vs">🏆</span>
+          <figure><img id="end-face-1" alt="Player 2"><figcaption id="end-name-1"></figcaption></figure>
+        </div>
+        <h1 id="end-title"></h1>
+        <div class="stats">
+          <div><b id="end-score"></b><span>points</span></div>
+          <div><b id="end-first"></b><span>right first time</span></div>
+          <div><b id="end-streak"></b><span>best streak</span></div>
+        </div>
+        <p>Tap a balloon to pop it!</p>
+      </div>
+      <div class="actions">
+        <button id="btn-again" class="btn primary big">Play again</button>
+        <button id="btn-other" class="btn secondary">Different game</button>
+        <button id="btn-newfaces" class="btn link">New photos</button>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Script order matters: each file uses the ones above it. -->
+  <script src="js/faces.js"></script>
+  <script src="js/questions.js"></script>
+  <script src="js/scenes.js"></script>
+  <script src="js/effects.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
